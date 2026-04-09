@@ -23,26 +23,23 @@ function App() {
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   const toggleFullscreen = useCallback(() => {
-    const el = chartCardRef.current;
-    if (!el) return;
-    if (!document.fullscreenElement) {
-      el.requestFullscreen?.() || el.webkitRequestFullscreen?.();
-    } else {
-      document.exitFullscreen?.() || document.webkitExitFullscreen?.();
-    }
+    setIsFullscreen(prev => !prev);
   }, []);
 
+  // Close fullscreen with Escape key
   useEffect(() => {
-    const handleFsChange = () => {
-      setIsFullscreen(!!document.fullscreenElement);
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && isFullscreen) setIsFullscreen(false);
     };
-    document.addEventListener('fullscreenchange', handleFsChange);
-    document.addEventListener('webkitfullscreenchange', handleFsChange);
-    return () => {
-      document.removeEventListener('fullscreenchange', handleFsChange);
-      document.removeEventListener('webkitfullscreenchange', handleFsChange);
-    };
-  }, []);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isFullscreen]);
+
+  // Prevent body scroll when fullscreen
+  useEffect(() => {
+    document.body.style.overflow = isFullscreen ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [isFullscreen]);
 
   useEffect(() => {
     // Close search results when clicking outside
